@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+#if UNITY_EDITOR
+using UnityEditor; // For exiting play mode in the Unity Editor
+#endif
 
 public class GameStartMenu : MonoBehaviour
 {
@@ -18,12 +23,14 @@ public class GameStartMenu : MonoBehaviour
 
     public List<Button> returnButtons;
 
-    // Start is called before the first frame update
+    [Header("Scene Configuration")]
+    public string targetSceneName = "Scene_02"; // Name of the scene to load
+
     void Start()
     {
         EnableMainMenu();
 
-        //Hook events
+        // Hook up button events
         startButton.onClick.AddListener(StartGame);
         optionButton.onClick.AddListener(EnableOption);
         aboutButton.onClick.AddListener(EnableAbout);
@@ -37,13 +44,31 @@ public class GameStartMenu : MonoBehaviour
 
     public void QuitGame()
     {
+        Debug.Log("Quitting the game...");
+
+#if UNITY_EDITOR
+        // Exit play mode in the Unity Editor
+        EditorApplication.isPlaying = false;
+#else
+        // Quit the application in a build
         Application.Quit();
+#endif
     }
 
     public void StartGame()
     {
+        Debug.Log("Starting the game...");
         HideAll();
-        SceneTransitionManager.singleton.GoToSceneAsync(1);
+
+        // Switch to the target scene
+        if (!string.IsNullOrEmpty(targetSceneName))
+        {
+            SceneManager.LoadScene(targetSceneName);
+        }
+        else
+        {
+            Debug.LogError("Target scene name is not set!");
+        }
     }
 
     public void HideAll()
@@ -59,12 +84,14 @@ public class GameStartMenu : MonoBehaviour
         options.SetActive(false);
         about.SetActive(false);
     }
+
     public void EnableOption()
     {
         mainMenu.SetActive(false);
         options.SetActive(true);
         about.SetActive(false);
     }
+
     public void EnableAbout()
     {
         mainMenu.SetActive(false);

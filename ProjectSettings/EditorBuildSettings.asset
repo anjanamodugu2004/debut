@@ -4,7 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/1 Start Scene.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Brick Project Studio/Apartment Kit/Scenes/Scene_02.unity
+    guid: 9b5aa6428ba7a6246bd201ba8d95cebe
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 8b9df0f38e2d32442af6f71a841e1c0f, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 526c0195ee1468341bde40cab651198d, type: 2}
