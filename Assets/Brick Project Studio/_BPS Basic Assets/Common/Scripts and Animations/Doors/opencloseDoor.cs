@@ -1,72 +1,92 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace SojaExiles
 {
-    public class opencloseDoor : MonoBehaviour
+    public class OpenCloseDoor : MonoBehaviour
     {
-        public Animator openandclose;
-        public bool open;
-        public Transform Player;
-        public XRController leftController;
-        public XRController rightController;
+        public Animator doorAnimator;                 // Animator for door animations
+        public InputActionReference triggerAction;   // Reference to trigger button input
+        public float interactionDistance = 15f;      // Maximum distance to allow interaction
 
-        private InputAction interactAction;
+        private bool isHovered = false;              // Is the door being hovered?
+        private bool isOpen = false;                 // Is the door open?
 
         void Start()
         {
-            open = false;
-
-            // Set up the input action for interacting (assuming "Activate" is mapped to the correct button in the input system)
-            interactAction = new InputAction(type: InputActionType.Button, binding: "<XRController>{RightHand}/trigger");
-            interactAction.Enable();
+            // Enable the trigger action
+            if (triggerAction != null)
+            {
+                triggerAction.action.Enable();
+            }
         }
 
         void Update()
         {
-            if (Player)
+            CheckHover();
+
+            // Check trigger input and only interact with the hovered door
+            if (isHovered && IsTriggerPressed())
             {
-                float dist = Vector3.Distance(Player.position, transform.position);
-                if (dist < 15)
+                if (!isOpen)
                 {
-                    if (IsInteractionButtonPressed())
-                    {
-                        if (open == false)
-                        {
-                            StartCoroutine(opening());
-                        }
-                        else
-                        {
-                            StartCoroutine(closing());
-                        }
-                    }
+                    StartCoroutine(OpenDoor());
+                }
+                else
+                {
+                    StartCoroutine(CloseDoor());
                 }
             }
         }
 
-        private bool IsInteractionButtonPressed()
+        private void CheckHover()
         {
-            // Check if the interaction button is pressed
-            return interactAction.WasPressedThisFrame();
+            // Perform a raycast to detect if the player is looking at this door
+            Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+            Debug.DrawRay(ray.origin, ray.direction * interactionDistance, Color.green); // Debug ray for visualization
+
+            if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
+            {
+                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                {
+                    if (!isHovered)
+                    {
+                        isHovered = true;
+                        Debug.Log($"Hover detected on: {gameObject.name}");
+                    }
+                    return;
+                }
+            }
+
+            if (isHovered)
+            {
+                isHovered = false;
+                Debug.Log($"Hover exited from: {gameObject.name}");
+            }
         }
 
-        IEnumerator opening()
+        private bool IsTriggerPressed()
         {
-            print("you are opening the door");
-            openandclose.Play("Opening");
-            open = true;
-            yield return new WaitForSeconds(.5f);
+            // Check if the trigger button is pressed
+            return triggerAction != null && triggerAction.action.triggered;
         }
 
-        IEnumerator closing()
+        IEnumerator OpenDoor()
         {
-            print("you are closing the door");
-            openandclose.Play("Closing");
-            open = false;
-            yield return new WaitForSeconds(.5f);
+            Debug.Log($"Opening {gameObject.name}...");
+            doorAnimator.Play("Opening");
+            isOpen = true;
+            yield return new WaitForSeconds(0.5f); // Wait for animation
+        }
+
+        IEnumerator CloseDoor()
+        {
+            Debug.Log($"Closing {gameObject.name}...");
+            doorAnimator.Play("Closing");
+            isOpen = false;
+            yield return new WaitForSeconds(0.5f); // Wait for animation
         }
     }
 }
